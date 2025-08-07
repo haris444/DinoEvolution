@@ -25,6 +25,12 @@ ENEMY_MAX_DAMAGE = 3
 ENEMY_ATTACK_RANGE = 60
 ENEMY_ATTACK_COOLDOWN = 1000  # milliseconds
 
+
+# Golden Apple Settings
+GOLDEN_APPLE_EXP_VALUE = 5
+GOLDEN_APPLE_SPAWN_TIME = 420  # frames (7 seconds at 60 FPS) - spawn less frequently than enemies
+
+
 # Enemy Appearance Parts
 ENEMY_HEADS = [
     ("Frog", (0, 255, 0)),

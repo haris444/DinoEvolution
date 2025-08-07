@@ -135,6 +135,7 @@ class GameRenderer:
                 3
             )
 
+
         elif enemy.accessory == "Cape":
             points = [
                 (enemy.rect.left, enemy.rect.bottom),
@@ -156,6 +157,32 @@ class GameRenderer:
                 (enemy.rect.centerx + 5, enemy.rect.top + 10),
                 3
             )
+
+    def draw_golden_apple(self, apple):
+        """Draw a golden apple collectible"""
+        # Draw apple body (golden circle)
+        pygame.draw.circle(self.screen, apple.color, apple.rect.center, apple.rect.width // 2)
+
+        # Draw apple outline for better visibility
+        pygame.draw.circle(self.screen, apple.outline_color, apple.rect.center, apple.rect.width // 2, 2)
+
+        # Draw apple stem (small brown line on top)
+        stem_start = (apple.rect.centerx, apple.rect.top + 5)
+        stem_end = (apple.rect.centerx, apple.rect.top)
+        pygame.draw.line(self.screen, BROWN, stem_start, stem_end, 2)
+
+        # Draw apple leaf (small green triangle)
+        leaf_points = [
+            (apple.rect.centerx + 3, apple.rect.top + 2),
+            (apple.rect.centerx + 8, apple.rect.top - 2),
+            (apple.rect.centerx + 5, apple.rect.top + 5)
+        ]
+        pygame.draw.polygon(self.screen, GREEN, leaf_points)
+
+        # Draw EXP value text above apple
+        exp_text = self.font.render(f"+{apple.exp_value} EXP", True, BLACK)
+        text_rect = exp_text.get_rect(center=(apple.rect.centerx, apple.rect.top - 15))
+        self.screen.blit(exp_text, text_rect)
 
     def _draw_health_bar(self, enemy):
         """Draw enemy health bar"""

@@ -3,6 +3,7 @@ from game_config import *
 from game_math import calculate_spawn_time_for_level, calculate_distance
 from player import Player
 from enemies import Enemy
+from golden_apple import GoldenApple
 from walls import create_walls
 from graphics import Particle, Pet, GameRenderer
 
@@ -23,10 +24,12 @@ class GameManager:
         """Reset all game objects to starting state"""
         self.player = Player()
         self.enemies = []
+        self.golden_apples = []
         self.particles = []
         self.pet = None
         self.walls = create_walls()
         self.enemy_spawn_timer = 0
+        self.apple_spawn_timer = 0
         self.game_state = "playing"
 
     def handle_input(self, event):
@@ -45,6 +48,9 @@ class GameManager:
         """Handle input during gameplay"""
         # Check if clicked on enemy
         self._handle_enemy_attacks(mouse_pos)
+
+        # Check if clicked on golden apple
+        self._handle_apple_collection(mouse_pos)
 
         # Check if clicked on pet button
         self._handle_pet_purchase(mouse_pos)
@@ -72,6 +78,18 @@ class GameManager:
                         print(f"Hit {enemy.name} for {damage_dealt} damage! Enemy health: {enemy.health}")
                 else:
                     print("Enemy too far away!")
+                break
+
+    def _handle_apple_collection(self, mouse_pos):
+        """Check if player clicked on a golden apple within attack range"""
+        for apple in self.golden_apples[:]:
+            if apple.is_clicked_by_player(mouse_pos, self.player):
+                # Collect the apple
+                exp_gained = apple.get_exp_value()
+                self.player.gain_experience(exp_gained)
+                self.golden_apples.remove(apple)
+                self._create_explosion_particles(apple.rect.centerx, apple.rect.centery)
+                print(f"Collected {apple.name} for {exp_gained} EXP!")
                 break
 
     def _handle_pet_purchase(self, mouse_pos):
@@ -122,6 +140,9 @@ class GameManager:
         # Spawn new enemies
         self._update_enemy_spawning()
 
+        # Spawn new golden apples
+        self._update_apple_spawning()
+
         # Update all enemies
         self._update_enemies()
 
@@ -139,6 +160,14 @@ class GameManager:
         if self.enemy_spawn_timer >= spawn_time:
             self.enemies.append(Enemy(self.walls, self.player.level))
             self.enemy_spawn_timer = 0
+
+    def _update_apple_spawning(self):
+        """Handle golden apple spawning"""
+        self.apple_spawn_timer += 1
+
+        if self.apple_spawn_timer >= GOLDEN_APPLE_SPAWN_TIME:
+            self.golden_apples.append(GoldenApple())
+            self.apple_spawn_timer = 0
 
     def _update_enemies(self):
         """Update all enemies"""
@@ -187,6 +216,10 @@ class GameManager:
         # Draw enemies
         for enemy in self.enemies:
             self.renderer.draw_enemy(enemy)
+
+        # Draw golden apples
+        for apple in self.golden_apples:
+            self.renderer.draw_golden_apple(apple)
 
         # Draw pet purchase button if available
         if self.player.can_buy_pet() and self.pet is None:
