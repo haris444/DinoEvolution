@@ -53,14 +53,13 @@ class Player:
 
     def _calculate_final_stats(self):
         """Calculate final stats by applying pet boosts to base stats"""
-        # Start with base stats
-        self.max_health = self.base_max_health
-        self.speed = self.base_speed
-        self.damage = self.base_damage
-        self.attack_range = PLAYER_ATTACK_RANGE  # Base attack range
-        self.regen_rate = self.base_max_health / 1000  # Base regen rate
+        # Tally up percentage boosts from all active pets
+        health_boost = 0
+        speed_boost = 0
+        damage_boost = 0
+        aura_boost = 0
+        regen_boost = 0
 
-        # Apply boosts from active pets
         for pet in self.pet_objects:
             if pet is None:
                 continue
@@ -69,15 +68,22 @@ class Player:
             boost_amount = pet.get_boost_amount()
 
             if boost_type == "health":
-                self.max_health += boost_amount
+                health_boost += boost_amount
             elif boost_type == "speed":
-                self.speed += boost_amount
+                speed_boost += boost_amount
             elif boost_type == "damage":
-                self.damage += boost_amount
+                damage_boost += boost_amount
             elif boost_type == "aura":
-                self.attack_range += boost_amount
+                aura_boost += boost_amount
             elif boost_type == "regeneration":
-                self.regen_rate += boost_amount
+                regen_boost += boost_amount
+
+        # Apply tallied boosts to base stats
+        self.max_health = self.base_max_health * (1 + health_boost)
+        self.speed = self.base_speed * (1 + speed_boost)
+        self.damage = self.base_damage * (1 + damage_boost)
+        self.attack_range = PLAYER_ATTACK_RANGE * (1 + aura_boost)
+        self.regen_rate = (self.base_max_health / 1000) * (1 + regen_boost)
 
     def add_win(self):
         """Increase win counter when player kills an enemy"""
@@ -142,35 +148,48 @@ class Player:
                 pet_name in self.get_available_pets())
 
     def handle_movement(self, keys, walls):
-        """Handle player movement with collision detection"""
-        # Store current position in case we need to revert
-        old_x, old_y = self.rect.x, self.rect.y
-
-        # Apply movement based on key input
+        """Handle player movement with precise collision detection"""
+        # Calculate proposed movement
+        move_x = 0
+        move_y = 0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.rect.x -= self.speed
+            move_x -= self.speed
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.rect.x += self.speed
+            move_x += self.speed
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.rect.y -= self.speed
+            move_y -= self.speed
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.rect.y += self.speed
+            move_y += self.speed
 
+        # Move horizontally and check for collisions
+        self.rect.x += move_x
+        collided_walls = self._get_colliding_walls(walls)
+        for wall in collided_walls:
+            if move_x > 0:  # Moving right; Hit the left side of the wall
+                self.rect.right = wall.rect.left
+            elif move_x < 0:  # Moving left; Hit the right side of the wall
+                self.rect.left = wall.rect.right
+
+        # Move vertically and check for collisions
+        self.rect.y += move_y
+        collided_walls = self._get_colliding_walls(walls)
+        for wall in collided_walls:
+            if move_y > 0:  # Moving down; Hit the top side of the wall
+                self.rect.bottom = wall.rect.top
+            elif move_y < 0:  # Moving up; Hit the bottom side of the wall
+                self.rect.top = wall.rect.bottom
 
         # Keeps player in gameplay area only
         self.rect.x = clamp_value(self.rect.x, GAMEPLAY_LEFT, GAMEPLAY_RIGHT - self.rect.width)
         self.rect.y = clamp_value(self.rect.y, 0, SCREEN_HEIGHT - self.rect.height)
 
-        # Check for wall collisions and revert if necessary
-        if self._check_wall_collision(walls):
-            self.rect.x, self.rect.y = old_x, old_y
-
-    def _check_wall_collision(self, walls):
-        """Check if player is colliding with any wall"""
+    def _get_colliding_walls(self, walls):
+        """Return a list of walls the player is colliding with"""
+        colliding_walls = []
         for wall in walls:
             if self.rect.colliderect(wall.rect):
-                return True
-        return False
+                colliding_walls.append(wall)
+        return colliding_walls
 
     def gain_experience(self, amount):
         """Add experience and handle level up"""

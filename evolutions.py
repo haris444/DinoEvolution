@@ -21,7 +21,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 2,
             "health": 20,
-            "speed": 10
+            "speed": 6
         },
         "specialty": "Balanced growth"
     },
@@ -33,7 +33,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 5,
             "health": 35,
-            "speed": 18
+            "speed": 7
         },
         "specialty": "High damage focus"
     },
@@ -45,7 +45,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 8,
             "health": 80,
-            "speed": 25
+            "speed": 9
         },
         "specialty": "Tank build - massive health"
     },
@@ -57,7 +57,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 18,
             "health": 120,
-            "speed": 35
+            "speed": 10
         },
         "specialty": "Explosive damage dealer"
     },
@@ -69,7 +69,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 30,
             "health": 200,
-            "speed": 75
+            "speed": 12
         },
         "specialty": "Speed demon - ultra fast"
     },
@@ -81,7 +81,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 55,
             "health": 350,
-            "speed": 95
+            "speed": 13
         },
         "specialty": "Meme power activation"
     },
@@ -93,7 +93,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 120,
             "health": 500,
-            "speed": 120
+            "speed": 15
         },
         "specialty": "Viral damage multiplier"
     },
@@ -105,7 +105,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 200,
             "health": 800,
-            "speed": 180
+            "speed": 16
         },
         "specialty": "Potassium-powered chaos"
     },
@@ -117,7 +117,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 350,
             "health": 1500,
-            "speed": 250
+            "speed": 17
         },
         "specialty": "Musical destruction"
     },
@@ -129,7 +129,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 750,
             "health": 2200,
-            "speed": 350
+            "speed": 18
         },
         "specialty": "Explosive specialist"
     },
@@ -141,7 +141,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 1200,
             "health": 4000,
-            "speed": 500
+            "speed": 20
         },
         "specialty": "Primal banana fury"
     },
@@ -153,7 +153,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 2500,
             "health": 6500,
-            "speed": 700
+            "speed": 21
         },
         "specialty": "Gusto overload"
     },
@@ -165,7 +165,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 4000,
             "health": 12000,
-            "speed": 900
+            "speed": 22
         },
         "specialty": "Cuteness with deadly power"
     },
@@ -177,7 +177,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 8000,
             "health": 20000,
-            "speed": 1200
+            "speed": 23
         },
         "specialty": "Ice cold elimination"
     },
@@ -189,7 +189,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 15000,
             "health": 35000,
-            "speed": 1800
+            "speed": 25
         },
         "specialty": "Digital reality breaker"
     },
@@ -201,7 +201,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 30000,
             "health": 60000,
-            "speed": 2500
+            "speed": 26
         },
         "specialty": "Ultimate meme lord"
     },
@@ -213,7 +213,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 55000,
             "health": 120000,
-            "speed": 3500
+            "speed": 28
         },
         "specialty": "Tornado of bruh energy"
     },
@@ -225,7 +225,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 100000,
             "health": 200000,
-            "speed": 5000
+            "speed": 30
         },
         "specialty": "Ultra instinct activated"
     },
@@ -237,7 +237,7 @@ EVOLUTIONS = {
         "stats": {
             "damage": 200000,
             "health": 500000,
-            "speed": 7500
+            "speed": 35
         },
         "specialty": "FINAL FORM - Transcendent being"
     }

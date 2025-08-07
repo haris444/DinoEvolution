@@ -9,89 +9,89 @@ PET_DATA = {
         "unlock_level": 1,
         "cost": 5,
         "boost_type": "damage",
-        "boost_amount": 2,
+        "boost_amount": 0.1,  # 10%
         "color": (255, 100, 100),  # Light Red
-        "description": "Boosts damage by +2"
+        "description": "+10% damage"
     },
     "Health Hamster": {
         "unlock_level": 1,
         "cost": 5,
         "boost_type": "health",
-        "boost_amount": 20,
+        "boost_amount": 0.15,  # 15%
         "color": (100, 255, 100),  # Light Green
-        "description": "Boosts max health by +20"
+        "description": "+15% max health"
     },
     "Range Owl": {
         "unlock_level": 1,
         "cost": 8,
         "boost_type": "aura",
-        "boost_amount": 15,
+        "boost_amount": 0.1,  # 10%
         "color": (150, 75, 200),  # Purple
-        "description": "Increases attack range by +15"
+        "description": "+10% attack range"
     },
     "Speed Squirrel": {
         "unlock_level": 4,
         "cost": 15,
         "boost_type": "speed",
-        "boost_amount": 3,
+        "boost_amount": 0.05,  # 5%
         "color": (100, 100, 255),  # Light Blue
-        "description": "Boosts speed by +3"
+        "description": "+5% speed"
     },
     "Regen Rabbit": {
         "unlock_level": 7,
         "cost": 30,
         "boost_type": "regeneration",
-        "boost_amount": 0.5,
+        "boost_amount": 0.2,  # 20%
         "color": (255, 255, 100),  # Light Yellow
-        "description": "Boosts health regen by +0.5/sec"
+        "description": "+20% health regen"
     },
     "Aura Axolotl": {
         "unlock_level": 10,
         "cost": 50,
         "boost_type": "aura",
-        "boost_amount": 25,
+        "boost_amount": 0.15,  # 15%
         "color": (255, 100, 255),  # Light Magenta
-        "description": "Increases attack range by +25"
+        "description": "+15% attack range"
     },
     "Mega Damage Dragon": {
         "unlock_level": 13,
         "cost": 100,
         "boost_type": "damage",
-        "boost_amount": 10,
+        "boost_amount": 0.2,  # 20%
         "color": (255, 0, 0),  # Red
-        "description": "Boosts damage by +10"
+        "description": "+20% damage"
     },
     "Radar Eagle": {
         "unlock_level": 16,
         "cost": 180,
         "boost_type": "aura",
-        "boost_amount": 40,
+        "boost_amount": 0.25,  # 25%
         "color": (75, 200, 200),  # Cyan
-        "description": "Increases attack range by +40"
+        "description": "+25% attack range"
     },
     "Ultra Health Unicorn": {
         "unlock_level": 16,
         "cost": 200,
         "boost_type": "health",
-        "boost_amount": 100,
+        "boost_amount": 0.3,  # 30%
         "color": (0, 255, 0),  # Green
-        "description": "Boosts max health by +100"
+        "description": "+30% max health"
     },
     "Lightning Llama": {
         "unlock_level": 19,
         "cost": 500,
         "boost_type": "speed",
-        "boost_amount": 15,
+        "boost_amount": 0.1,  # 10%
         "color": (255, 255, 0),  # Yellow
-        "description": "Boosts speed by +15"
+        "description": "+10% speed"
     },
     "Cosmic Chameleon": {
         "unlock_level": 19,
         "cost": 600,
         "boost_type": "aura",
-        "boost_amount": 60,
+        "boost_amount": 0.35,  # 35%
         "color": (200, 50, 255),  # Deep Purple
-        "description": "Increases attack range by +60"
+        "description": "+35% attack range"
     }
 }
 

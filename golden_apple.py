@@ -7,9 +7,9 @@ class GoldenApple:
     """A collectible golden apple that gives experience when clicked"""
 
     def __init__(self):
-        # Generate random spawn position ON screen (not off-screen like enemies)
-        x = random.randint(50, SCREEN_WIDTH - 80)  # Leave some margin from edges
-        y = random.randint(50, SCREEN_HEIGHT - 80)  # Leave some margin from edges
+        # Generate random spawn position within the gameplay area only
+        x = random.randint(GAMEPLAY_LEFT + 20, GAMEPLAY_RIGHT - 50)
+        y = random.randint(50, SCREEN_HEIGHT - 80)  # Y-axis is fine
         self.rect = pygame.Rect(x, y, 30, 30)  # Smaller than enemies
 
         # Apple properties
