@@ -14,7 +14,7 @@ class Player:
         self._update_evolution_and_stats()
 
         # Position and size
-        self.rect = pygame.Rect(50, 50, 50, 50)
+        self.rect = pygame.Rect(40, 40, 40, 40)
 
     def _update_evolution_and_stats(self):
         """Update player appearance AND stats based on current level"""
