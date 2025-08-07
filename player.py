@@ -156,8 +156,9 @@ class Player:
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             self.rect.y += self.speed
 
-        # Keep player within screen boundaries
-        self.rect.x = clamp_value(self.rect.x, 0, SCREEN_WIDTH - self.rect.width)
+
+        # Keeps player in gameplay area only
+        self.rect.x = clamp_value(self.rect.x, GAMEPLAY_LEFT, GAMEPLAY_RIGHT - self.rect.width)
         self.rect.y = clamp_value(self.rect.y, 0, SCREEN_HEIGHT - self.rect.height)
 
         # Check for wall collisions and revert if necessary

@@ -41,7 +41,15 @@ class GameRenderer:
         self.font = font
 
     def draw_background(self):
-        """Draw gradient background"""
+        """Draw gradient background with UI panel"""
+        # Draw UI panel background (dark gray)
+        ui_panel_rect = pygame.Rect(0, 0, UI_PANEL_WIDTH, SCREEN_HEIGHT)
+        pygame.draw.rect(self.screen, DARK_GRAY, ui_panel_rect)
+
+        # Draw separator line
+        pygame.draw.line(self.screen, WHITE, (UI_PANEL_WIDTH, 0), (UI_PANEL_WIDTH, SCREEN_HEIGHT), 2)
+
+        # Draw gradient background for gameplay area
         for y in range(SCREEN_HEIGHT):
             # Create gradient effect with mathematical color interpolation
             color_intensity = max(0, min(255, int(135 - y * 0.2)))
@@ -50,7 +58,7 @@ class GameRenderer:
                 min(255, int(206 - y * 0.1)),
                 min(255, int(235 - y * 0.15))
             )
-            pygame.draw.line(self.screen, color, (0, y), (SCREEN_WIDTH, y))
+            pygame.draw.line(self.screen, color, (UI_PANEL_WIDTH, y), (SCREEN_WIDTH, y))
 
     def draw_player(self, player):
         """Draw player with attack range visualization (now pet-boosted)"""
@@ -174,70 +182,121 @@ class GameRenderer:
         pygame.draw.rect(self.screen, wall.color, wall.rect)
 
     def draw_ui(self, player):
-        """Draw all user interface elements - positioned off-screen to the left"""
-        # Player stats - moved far to the left off-screen
-        stats_text = self.font.render(
-            f"Level: {player.level} EXP: {player.exp:.1f}/{player.exp_to_next_level:.1f} Wins: {player.wins}",
-            True, BLACK
-        )
-        self.screen.blit(stats_text, (-400, 10))
+        """Draw all user interface elements in the left UI panel"""
+        # UI Panel title
+        title_text = self.font.render("PLAYER STATS", True, WHITE)
+        self.screen.blit(title_text, (10, 10))
 
-        evolution_text = self.font.render(f"Evolution: {player.evolution}", True, BLACK)
-        self.screen.blit(evolution_text, (-400, 35))
+        # Player basic stats
+        level_exp_text = self.font.render(
+            f"Level: {player.level}", True, WHITE
+        )
+        self.screen.blit(level_exp_text, (10, 40))
+
+        exp_text = self.font.render(
+            f"EXP: {player.exp:.1f}/{player.exp_to_next_level:.1f}", True, WHITE
+        )
+        self.screen.blit(exp_text, (10, 60))
+
+        wins_text = self.font.render(f"Wins: {player.wins}", True, WHITE)
+        self.screen.blit(wins_text, (10, 80))
+
+        evolution_text = self.font.render(f"Evolution:", True, WHITE)
+        self.screen.blit(evolution_text, (10, 110))
+
+        evo_name_text = self.font.render(f"{player.evolution}", True, YELLOW)
+        self.screen.blit(evo_name_text, (10, 130))
 
         # Show specialty
-        specialty_text = self.font.render(f"Specialty: {player.specialty}", True, BLACK)
-        self.screen.blit(specialty_text, (-400, 60))
+        specialty_text = self.font.render(f"Specialty:", True, WHITE)
+        self.screen.blit(specialty_text, (10, 160))
 
-        # Show pet-boosted stats
-        stats_text = self.font.render(
-            f"Damage: {player.damage} | Speed: {player.speed} | Range: {player.attack_range}",
-            True, BLACK
-        )
-        self.screen.blit(stats_text, (-400, 85))
+        # Split specialty text if too long
+        specialty_words = player.specialty.split()
+        if len(player.specialty) > 25:  # If too long, split into two lines
+            line1 = " ".join(specialty_words[:3])
+            line2 = " ".join(specialty_words[3:])
+            spec1_text = self.font.render(line1, True, CYAN)
+            spec2_text = self.font.render(line2, True, CYAN)
+            self.screen.blit(spec1_text, (10, 180))
+            self.screen.blit(spec2_text, (10, 200))
+            y_offset = 220
+        else:
+            spec_text = self.font.render(player.specialty, True, CYAN)
+            self.screen.blit(spec_text, (10, 180))
+            y_offset = 210
 
-        health_text = self.font.render(
-            f"Health: {player.health:.0f}/{player.max_health} | Regen: {player.regen_rate:.2f}/sec",
-            True, BLACK
-        )
-        self.screen.blit(health_text, (-400, 110))
+        # Combat stats
+        damage_text = self.font.render(f"Damage: {player.damage}", True, WHITE)
+        self.screen.blit(damage_text, (10, y_offset))
+
+        speed_text = self.font.render(f"Speed: {player.speed}", True, WHITE)
+        self.screen.blit(speed_text, (10, y_offset + 20))
+
+        range_text = self.font.render(f"Range: {player.attack_range}", True, WHITE)
+        self.screen.blit(range_text, (10, y_offset + 40))
+
+        # Health stats
+        health_text = self.font.render(f"Health: {player.health:.0f}/{player.max_health}", True, WHITE)
+        self.screen.blit(health_text, (10, y_offset + 70))
+
+        regen_text = self.font.render(f"Regen: {player.regen_rate:.2f}/sec", True, WHITE)
+        self.screen.blit(regen_text, (10, y_offset + 90))
+
+        # Player health bar
+        self._draw_player_health_bar(player, y_offset + 110)
 
         # Show active pets
-        pets_text = "Active Pets: "
+        pets_title = self.font.render("Active Pets:", True, WHITE)
+        self.screen.blit(pets_title, (10, y_offset + 140))
+
         for i in range(3):
+            pet_y = y_offset + 160 + (i * 20)
             if (i < len(player.pet_objects) and
                     player.pet_objects[i] is not None):
-                pets_text += f"[{i + 1}: {player.pet_objects[i].name}] "
+                pet_name = player.pet_objects[i].name
+                # Truncate pet name if too long
+                if len(pet_name) > 18:
+                    pet_name = pet_name[:15] + "..."
+                pet_text = f"[{i + 1}]: {pet_name}"
+                color = GREEN
             else:
-                pets_text += f"[{i + 1}: Empty] "
-        pets_display = self.font.render(pets_text, True, BLACK)
-        self.screen.blit(pets_display, (-400, 135))
+                pet_text = f"[{i + 1}]: Empty"
+                color = GRAY
 
-        # Player health bar - moved off-screen to the left
-        self._draw_player_health_bar(player)
+            pets_display = self.font.render(pet_text, True, color)
+            self.screen.blit(pets_display, (10, pet_y))
 
-        # Instructions - moved off-screen to the left
-        instructions1 = self.font.render(
-            "WASD/Arrows: move | Click: attack | P: Pet Shop | T: Pet Team",
-            True, BLACK
-        )
-        self.screen.blit(instructions1, (-400, SCREEN_HEIGHT - 50))
+        # Instructions at bottom of UI panel
+        instructions1 = self.font.render("CONTROLS:", True, WHITE)
+        self.screen.blit(instructions1, (10, SCREEN_HEIGHT - 120))
 
-        instructions2 = self.font.render(
-            "Kill enemies to earn wins for buying pets!",
-            True, BLACK
-        )
-        self.screen.blit(instructions2, (-400, SCREEN_HEIGHT - 25))
+        instructions2 = self.font.render("WASD/Arrows: Move", True, WHITE)
+        self.screen.blit(instructions2, (10, SCREEN_HEIGHT - 100))
 
-    def _draw_player_health_bar(self, player):
-        """Draw the player's health bar - positioned off-screen to the left"""
+        instructions3 = self.font.render("Click: Attack", True, WHITE)
+        self.screen.blit(instructions3, (10, SCREEN_HEIGHT - 80))
+
+        instructions4 = self.font.render("P: Pet Shop", True, WHITE)
+        self.screen.blit(instructions4, (10, SCREEN_HEIGHT - 60))
+
+        instructions5 = self.font.render("T: Pet Team", True, WHITE)
+        self.screen.blit(instructions5, (10, SCREEN_HEIGHT - 40))
+
+        instructions6 = self.font.render("Kill enemies for wins!", True, YELLOW)
+        self.screen.blit(instructions6, (10, SCREEN_HEIGHT - 20))
+
+    def _draw_player_health_bar(self, player, y_pos):
+        """Draw the player's health bar in the UI panel"""
         health_percentage = calculate_health_percentage(player.health, player.max_health)
-        health_width = int(health_percentage * 200)
+        health_width = int(health_percentage * 280)  # Scale to fit UI panel (280px wide)
 
-        # Background (red) - moved off-screen to the left
-        pygame.draw.rect(self.screen, RED, (-400, 160, 200, 20))
-        # Foreground (green) - moved off-screen to the left
-        pygame.draw.rect(self.screen, GREEN, (-400, 160, health_width, 20))
+        # Background (red)
+        pygame.draw.rect(self.screen, RED, (10, y_pos, 280, 20))
+        # Foreground (green)
+        pygame.draw.rect(self.screen, GREEN, (10, y_pos, health_width, 20))
+        # Border
+        pygame.draw.rect(self.screen, WHITE, (10, y_pos, 280, 20), 2)
 
     def draw_pet_shop(self, player, selected_pet_info, confirm_purchase):
         """Draw the pet shop interface"""
