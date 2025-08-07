@@ -2,6 +2,7 @@
 
 # Player Settings
 PLAYER_START_HEALTH = 10
+PLAYER_BASE_MAX_HEALTH = 10
 PLAYER_SPEED = 5
 
 # Leveling Settings

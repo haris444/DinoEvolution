@@ -143,6 +143,37 @@ def draw_ui(screen, player, font):
     instructions = font.render("Use WASD or Arrow Keys to move. Click enemies to attack!", True, BLACK)
     screen.blit(instructions, (10, SCREEN_HEIGHT - 30))
 
+def draw_game_over_screen(screen, font, player, pet):
+    """Draws the game over screen with all final stats."""
+    screen.fill(BLACK)
+
+    # Game Over title
+    title_text = font.render("Game Over", True, WHITE)
+    title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120))
+    screen.blit(title_text, title_rect)
+
+    # Final stats
+    y_offset = SCREEN_HEIGHT // 2 - 60
+    stats_to_show = [
+        f"Final Level: {player.level}",
+        f"Final Evolution: {player.evolution}",
+        f"EXP: {int(player.exp)}/{int(player.exp_to_next_level)}",
+        f"Pet Acquired: {'Yes' if pet else 'No'}"
+    ]
+
+    for text_line in stats_to_show:
+        stats_text = font.render(text_line, True, WHITE)
+        stats_rect = stats_text.get_rect(center=(SCREEN_WIDTH // 2, y_offset))
+        screen.blit(stats_text, stats_rect)
+        y_offset += 35
+
+    # Play Again button
+    play_again_button = pygame.Rect(SCREEN_WIDTH // 2 - 75, y_offset + 10, 150, 50)
+    play_again_text = font.render("Play Again", True, BLACK)
+    pygame.draw.rect(screen, WHITE, play_again_button)
+    screen.blit(play_again_text, play_again_text.get_rect(center=play_again_button.center))
+
+    return play_again_button
 
 def draw_pet_button(screen, font):
     """Draw the pet purchase button"""
