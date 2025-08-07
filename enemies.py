@@ -12,7 +12,7 @@ from game_math import (
 
 class Enemy:
     def __init__(self, walls, player_level=1):
-        # Generate spawn position outside screen
+        # Generate spawn position outside gameplay area
         x, y = generate_random_spawn_position()
         self.rect = pygame.Rect(x, y, 40, 40)
 
@@ -52,9 +52,9 @@ class Enemy:
         # Try to move towards player
         self._attempt_movement(move_x, move_y, walls)
 
-        # Keep enemies near screen (allow slight off-screen movement)
-        self.rect.x = clamp_value(self.rect.x, -12, SCREEN_WIDTH + 12)
-        self.rect.y = clamp_value(self.rect.y, -12, SCREEN_HEIGHT + 12)
+        # Keep enemies near gameplay area (allow slight off-screen movement)
+        self.rect.x = clamp_value(self.rect.x, GAMEPLAY_LEFT - 12, GAMEPLAY_RIGHT + 12)
+        self.rect.y = clamp_value(self.rect.y, GAMEPLAY_TOP - 12, GAMEPLAY_BOTTOM + 12)
 
     def _attempt_movement(self, move_x, move_y, walls):
         """Try to move, handling wall collisions intelligently"""

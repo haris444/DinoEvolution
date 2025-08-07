@@ -2,6 +2,7 @@ import pygame
 from game_config import *
 from game_math import calculate_experience_needed, clamp_value
 from evolutions import get_evolution_data
+from pets import Pet, get_available_pets_for_level
 
 
 class Player:
@@ -9,11 +10,17 @@ class Player:
         self.level = 1
         self.exp = 0
         self.exp_to_next_level = START_EXP_TO_LEVEL
+        self.wins = 0  # Track enemy kills for buying pets
+
+        # Pet system
+        self.owned_pets = []  # List of pet names the player owns
+        self.active_pets = [None, None, None]  # 3 slots for active pets (Pet objects)
+        self.pet_objects = [None, None, None]  # Currently active Pet objects (3 slots)
 
         # Set initial evolution and stats
         self._update_evolution_and_stats()
 
-        # Position and size
+        # Position and size - 40x40 collision box (head is visual only)
         self.rect = pygame.Rect(40, 40, 40, 40)
 
     def _update_evolution_and_stats(self):
@@ -26,13 +33,15 @@ class Player:
         self.head_color = evolution_data["head_color"]
         self.specialty = evolution_data["specialty"]
 
-        # Update stats from evolution data
+        # Update base stats from evolution data
         stats = evolution_data["stats"]
-        old_max_health = getattr(self, 'max_health', stats["health"])
 
-        self.max_health = stats["health"]
-        self.speed = stats["speed"]
-        self.damage = stats["damage"]
+        self.base_max_health = stats["health"]
+        self.base_speed = stats["speed"]
+        self.base_damage = stats["damage"]
+
+        # Apply pet boosts to get final stats
+        self._calculate_final_stats()
 
         # Handle health on level up
         if hasattr(self, 'health'):
@@ -41,6 +50,96 @@ class Player:
         else:
             # First time initialization
             self.health = self.max_health
+
+    def _calculate_final_stats(self):
+        """Calculate final stats by applying pet boosts to base stats"""
+        # Start with base stats
+        self.max_health = self.base_max_health
+        self.speed = self.base_speed
+        self.damage = self.base_damage
+        self.attack_range = PLAYER_ATTACK_RANGE  # Base attack range
+        self.regen_rate = self.base_max_health / 1000  # Base regen rate
+
+        # Apply boosts from active pets
+        for pet in self.pet_objects:
+            if pet is None:
+                continue
+
+            boost_type = pet.get_boost_type()
+            boost_amount = pet.get_boost_amount()
+
+            if boost_type == "health":
+                self.max_health += boost_amount
+            elif boost_type == "speed":
+                self.speed += boost_amount
+            elif boost_type == "damage":
+                self.damage += boost_amount
+            elif boost_type == "aura":
+                self.attack_range += boost_amount
+            elif boost_type == "regeneration":
+                self.regen_rate += boost_amount
+
+    def add_win(self):
+        """Increase win counter when player kills an enemy"""
+        self.wins += 1
+        print(f"Win! Total wins: {self.wins}")
+
+    def buy_pet(self, pet_name):
+        """Buy a pet if player has enough wins"""
+        from pets import get_pet_cost
+        cost = get_pet_cost(pet_name)
+
+        if self.wins >= cost and pet_name not in self.owned_pets:
+            self.wins -= cost
+            self.owned_pets.append(pet_name)
+            print(f"Bought {pet_name} for {cost} wins!")
+            return True
+        return False
+
+    def set_active_pet(self, slot_index, pet_name):
+        """Set a pet to be active in the given slot (0, 1, or 2)"""
+        if not (0 <= slot_index < 3):
+            print(f"Invalid slot index: {slot_index}")
+            return
+
+        if pet_name in self.owned_pets or pet_name is None:
+            # Remove old pet from that slot
+            if slot_index < len(self.pet_objects) and self.pet_objects[slot_index] is not None:
+                self.pet_objects[slot_index] = None
+
+            # Add new pet if not None
+            if pet_name is not None:
+                new_pet = Pet(pet_name, slot_index)
+                self.pet_objects[slot_index] = new_pet
+            else:
+                self.pet_objects[slot_index] = None
+
+            # Recalculate stats with new pets
+            self._calculate_final_stats()
+
+            # Ensure health doesn't exceed new max
+            if hasattr(self, 'health') and self.health > self.max_health:
+                self.health = self.max_health
+
+    def update_pets(self):
+        """Update all active pets"""
+        player_center = (self.rect.centerx, self.rect.centery)
+        for i in range(3):
+            if (i < len(self.pet_objects) and
+                    self.pet_objects[i] is not None):
+                self.pet_objects[i].update(player_center)
+
+    def get_available_pets(self):
+        """Get list of pets available for purchase at current level"""
+        return get_available_pets_for_level(self.level)
+
+    def can_buy_pet(self, pet_name):
+        """Check if player can buy a specific pet"""
+        from pets import get_pet_cost
+        cost = get_pet_cost(pet_name)
+        return (self.wins >= cost and
+                pet_name not in self.owned_pets and
+                pet_name in self.get_available_pets())
 
     def handle_movement(self, keys, walls):
         """Handle player movement with collision detection"""
@@ -100,15 +199,11 @@ class Player:
             self.health = 0
 
     def heal_over_time(self):
-        """Slowly regenerate health when not at maximum"""
+        """Slowly regenerate health when not at maximum (boosted by pets)"""
         if self.health > 0 and self.health < self.max_health:
-            self.health += self.max_health / 1000  # Heal 0.1% of max health per frame
+            self.health += self.regen_rate  # Now uses pet-boosted regen rate
             if self.health > self.max_health:
                 self.health = self.max_health
-
-    def can_buy_pet(self):
-        """Check if player is high enough level to buy a pet"""
-        return self.level >= PET_UNLOCK_LEVEL
 
     def is_alive(self):
         """Check if player is still alive"""

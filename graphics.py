@@ -2,6 +2,7 @@ import pygame
 import random
 from game_config import *
 from game_math import calculate_health_percentage
+from pets import get_pet_info, get_pet_cost
 
 
 class Particle:
@@ -32,31 +33,6 @@ class Particle:
         return self.lifetime > 0
 
 
-class Pet:
-    """Pet that generates passive experience"""
-
-    def __init__(self):
-        self.exp_per_second = PET_EXP_PER_SECOND
-        self.last_update = pygame.time.get_ticks()
-        self.rect = pygame.Rect(700, 450, 30, 30)
-        self.color = YELLOW
-
-    def update(self):
-        """Update pet and return EXP if a second has passed"""
-        now = pygame.time.get_ticks()
-        if now - self.last_update >= 1000:  # One second passed
-            self.last_update = now
-            return self.exp_per_second
-        return 0
-
-    def draw(self, screen):
-        """Draw the pet character"""
-        # Pet body
-        pygame.draw.rect(screen, self.color, self.rect)
-        # Pet head
-        pygame.draw.circle(screen, CYAN, (self.rect.centerx, self.rect.top + 10), 10)
-
-
 class GameRenderer:
     """Handles all game drawing operations"""
 
@@ -77,17 +53,17 @@ class GameRenderer:
             pygame.draw.line(self.screen, color, (0, y), (SCREEN_WIDTH, y))
 
     def draw_player(self, player):
-        """Draw player with attack range visualization"""
-        # Draw attack range aura
+        """Draw player with attack range visualization (now pet-boosted)"""
+        # Draw attack range aura (using pet-boosted range)
         aura_surface = pygame.Surface(
-            (PLAYER_ATTACK_RANGE * 2, PLAYER_ATTACK_RANGE * 2),
+            (player.attack_range * 2, player.attack_range * 2),
             pygame.SRCALPHA
         )
         pygame.draw.circle(
             aura_surface,
             (255, 192, 203, 50),  # Semi-transparent pink
-            (PLAYER_ATTACK_RANGE, PLAYER_ATTACK_RANGE),
-            PLAYER_ATTACK_RANGE
+            (player.attack_range, player.attack_range),
+            player.attack_range
         )
         aura_rect = aura_surface.get_rect(center=player.rect.center)
         self.screen.blit(aura_surface, aura_rect)
@@ -134,7 +110,6 @@ class GameRenderer:
                 (enemy.rect.right + 20, enemy.rect.centery + 10),
                 3
             )
-
 
         elif enemy.accessory == "Cape":
             points = [
@@ -199,61 +174,256 @@ class GameRenderer:
         pygame.draw.rect(self.screen, wall.color, wall.rect)
 
     def draw_ui(self, player):
-        """Draw all user interface elements"""
-        # Player stats - updated to show new stats
+        """Draw all user interface elements - positioned off-screen to the left"""
+        # Player stats - moved far to the left off-screen
         stats_text = self.font.render(
-            f"Level: {player.level} EXP: {player.exp:.1f}/{player.exp_to_next_level:.1f}",
+            f"Level: {player.level} EXP: {player.exp:.1f}/{player.exp_to_next_level:.1f} Wins: {player.wins}",
             True, BLACK
         )
-        self.screen.blit(stats_text, (10, 10))
+        self.screen.blit(stats_text, (-400, 10))
 
         evolution_text = self.font.render(f"Evolution: {player.evolution}", True, BLACK)
-        self.screen.blit(evolution_text, (10, 35))
+        self.screen.blit(evolution_text, (-400, 35))
 
         # Show specialty
         specialty_text = self.font.render(f"Specialty: {player.specialty}", True, BLACK)
-        self.screen.blit(specialty_text, (10, 60))
+        self.screen.blit(specialty_text, (-400, 60))
 
-        # Show damage and speed stats
+        # Show pet-boosted stats
         stats_text = self.font.render(
-            f"Damage: {player.damage} | Speed: {player.speed}",
+            f"Damage: {player.damage} | Speed: {player.speed} | Range: {player.attack_range}",
             True, BLACK
         )
-        self.screen.blit(stats_text, (10, 85))
+        self.screen.blit(stats_text, (-400, 85))
 
         health_text = self.font.render(
-            f"Health: {player.health:.0f}/{player.max_health}",
+            f"Health: {player.health:.0f}/{player.max_health} | Regen: {player.regen_rate:.2f}/sec",
             True, BLACK
         )
-        self.screen.blit(health_text, (10, 110))
+        self.screen.blit(health_text, (-400, 110))
 
-        # Player health bar - adjusted position
+        # Show active pets
+        pets_text = "Active Pets: "
+        for i in range(3):
+            if (i < len(player.pet_objects) and
+                    player.pet_objects[i] is not None):
+                pets_text += f"[{i + 1}: {player.pet_objects[i].name}] "
+            else:
+                pets_text += f"[{i + 1}: Empty] "
+        pets_display = self.font.render(pets_text, True, BLACK)
+        self.screen.blit(pets_display, (-400, 135))
+
+        # Player health bar - moved off-screen to the left
         self._draw_player_health_bar(player)
 
-        # Instructions
-        instructions = self.font.render(
-            "Use WASD or Arrow Keys to move. Click enemies to attack!",
+        # Instructions - moved off-screen to the left
+        instructions1 = self.font.render(
+            "WASD/Arrows: move | Click: attack | P: Pet Shop | T: Pet Team",
             True, BLACK
         )
-        self.screen.blit(instructions, (10, SCREEN_HEIGHT - 30))
+        self.screen.blit(instructions1, (-400, SCREEN_HEIGHT - 50))
+
+        instructions2 = self.font.render(
+            "Kill enemies to earn wins for buying pets!",
+            True, BLACK
+        )
+        self.screen.blit(instructions2, (-400, SCREEN_HEIGHT - 25))
 
     def _draw_player_health_bar(self, player):
-        """Draw the player's health bar"""
+        """Draw the player's health bar - positioned off-screen to the left"""
         health_percentage = calculate_health_percentage(player.health, player.max_health)
         health_width = int(health_percentage * 200)
 
-        # Background (red)
-        pygame.draw.rect(self.screen, RED, (10, 135, 200, 20))
-        # Foreground (green)
-        pygame.draw.rect(self.screen, GREEN, (10, 135, health_width, 20))
+        # Background (red) - moved off-screen to the left
+        pygame.draw.rect(self.screen, RED, (-400, 160, 200, 20))
+        # Foreground (green) - moved off-screen to the left
+        pygame.draw.rect(self.screen, GREEN, (-400, 160, health_width, 20))
 
-    def draw_pet_button(self):
-        """Draw the pet purchase button"""
-        pygame.draw.rect(self.screen, CYAN, (700, 500, 100, 50))
-        text = self.font.render("Buy Pet", True, BLACK)
-        self.screen.blit(text, (710, 515))
+    def draw_pet_shop(self, player, selected_pet_info, confirm_purchase):
+        """Draw the pet shop interface"""
+        self.screen.fill(BLACK)
 
-    def draw_game_over_screen(self, player, pet):
+        # Title
+        title = self.font.render("PET SHOP", True, WHITE)
+        title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 50))
+        self.screen.blit(title, title_rect)
+
+        # Show wins
+        wins_text = self.font.render(f"Wins: {player.wins}", True, WHITE)
+        self.screen.blit(wins_text, (50, 70))
+
+        # Show available pets
+        available_pets = player.get_available_pets()
+        y_start = 100
+
+        for i, pet_name in enumerate(available_pets):
+            y = y_start + i * 60
+            pet_info = get_pet_info(pet_name)
+            cost = get_pet_cost(pet_name)
+
+            # Pet background
+            pet_rect = pygame.Rect(50, y, 500, 50)
+            if pet_name in player.owned_pets:
+                pygame.draw.rect(self.screen, (0, 100, 0), pet_rect)  # Green for owned
+                status = "OWNED"
+            elif player.can_buy_pet(pet_name):
+                pygame.draw.rect(self.screen, (0, 0, 100), pet_rect)  # Blue for buyable
+                status = f"Cost: {cost} wins"
+            else:
+                pygame.draw.rect(self.screen, (100, 0, 0), pet_rect)  # Red for can't buy
+                status = f"Need {cost} wins"
+
+            pygame.draw.rect(self.screen, WHITE, pet_rect, 2)  # White border
+
+            # Pet info text
+            name_text = self.font.render(pet_name, True, WHITE)
+            desc_text = self.font.render(pet_info["description"], True, WHITE)
+            status_text = self.font.render(status, True, WHITE)
+
+            self.screen.blit(name_text, (60, y + 5))
+            self.screen.blit(desc_text, (60, y + 20))
+            self.screen.blit(status_text, (60, y + 35))
+
+            # Pet color indicator
+            color_rect = pygame.Rect(520, y + 10, 20, 30)
+            pygame.draw.rect(self.screen, pet_info["color"], color_rect)
+
+        # Purchase confirmation dialog
+        if confirm_purchase and selected_pet_info:
+            # Semi-transparent overlay
+            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            overlay.set_alpha(128)
+            overlay.fill(BLACK)
+            self.screen.blit(overlay, (0, 0))
+
+            # Confirmation box
+            dialog_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 300, 300, 180)
+            pygame.draw.rect(self.screen, GRAY, dialog_rect)
+            pygame.draw.rect(self.screen, WHITE, dialog_rect, 3)
+
+            # Confirmation text
+            pet_info = get_pet_info(selected_pet_info)
+            cost = get_pet_cost(selected_pet_info)
+
+            confirm_text = [
+                f"Buy {selected_pet_info}?",
+                pet_info["description"],
+                f"Cost: {cost} wins",
+                f"You have: {player.wins} wins"
+            ]
+
+            for i, text in enumerate(confirm_text):
+                rendered = self.font.render(text, True, BLACK)
+                text_rect = rendered.get_rect(center=(SCREEN_WIDTH // 2, 330 + i * 25))
+                self.screen.blit(rendered, text_rect)
+
+            # Buttons - positioned below the text
+            confirm_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 430, 80, 40)
+            cancel_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 430, 80, 40)
+
+            pygame.draw.rect(self.screen, GREEN, confirm_rect)
+            pygame.draw.rect(self.screen, RED, cancel_rect)
+
+            confirm_btn_text = self.font.render("BUY", True, WHITE)
+            cancel_btn_text = self.font.render("CANCEL", True, WHITE)
+
+            self.screen.blit(confirm_btn_text, confirm_btn_text.get_rect(center=confirm_rect.center))
+            self.screen.blit(cancel_btn_text, cancel_btn_text.get_rect(center=cancel_rect.center))
+
+        # Instructions
+        instructions = self.font.render("Click on pets to buy them! Press ESC to close.", True, WHITE)
+        self.screen.blit(instructions, (50, SCREEN_HEIGHT - 50))
+
+    def draw_pet_selection(self, player):
+        """Draw the pet selection interface"""
+        self.screen.fill(BLACK)
+
+        # Title
+        title = self.font.render("PET TEAM SELECTION", True, WHITE)
+        title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 50))
+        self.screen.blit(title, title_rect)
+
+        # Show owned pets
+        owned_text = self.font.render("Your Pets:", True, WHITE)
+        self.screen.blit(owned_text, (50, 80))
+
+        y_start = 100
+        for i, pet_name in enumerate(player.owned_pets):
+            y = y_start + i * 40
+            pet_info = get_pet_info(pet_name)
+
+            # Pet background
+            pet_rect = pygame.Rect(50, y, 400, 35)
+            pygame.draw.rect(self.screen, (50, 50, 50), pet_rect)
+            pygame.draw.rect(self.screen, WHITE, pet_rect, 2)
+
+            # Pet info
+            name_text = self.font.render(f"{pet_name}: {pet_info['description']}", True, WHITE)
+            self.screen.blit(name_text, (60, y + 8))
+
+            # Color indicator
+            color_rect = pygame.Rect(420, y + 5, 25, 25)
+            pygame.draw.rect(self.screen, pet_info["color"], color_rect)
+
+        # Show active slots
+        slots_text = self.font.render("Active Pet Slots (click to remove):", True, WHITE)
+        self.screen.blit(slots_text, (50, 280))
+
+        for slot in range(3):
+            x = 50 + slot * 180
+            y = 300
+            slot_rect = pygame.Rect(x, y, 160, 200)
+
+            # Slot background
+            pygame.draw.rect(self.screen, (30, 30, 30), slot_rect)
+            pygame.draw.rect(self.screen, WHITE, slot_rect, 2)
+
+            # Slot title
+            slot_title = self.font.render(f"Slot {slot + 1}", True, WHITE)
+            self.screen.blit(slot_title, (x + 10, y + 10))
+
+            # Pet in slot
+            if (slot < len(player.pet_objects) and
+                    player.pet_objects[slot] is not None):
+                pet = player.pet_objects[slot]
+                pet_info = get_pet_info(pet.name)
+
+                # Pet visual representation
+                pet_visual_rect = pygame.Rect(x + 30, y + 40, 100, 100)
+                pygame.draw.rect(self.screen, pet_info["color"], pet_visual_rect)
+
+                # Pet name and description
+                name = self.font.render(pet.name, True, WHITE)
+                desc_lines = pet_info["description"].split()
+
+                # Wrap text to fit in slot
+                line1 = " ".join(desc_lines[:2]) if len(desc_lines) >= 2 else pet_info["description"]
+                line2 = " ".join(desc_lines[2:]) if len(desc_lines) > 2 else ""
+
+                name_rect = name.get_rect(center=(x + 80, y + 155))
+                self.screen.blit(name, name_rect)
+
+                desc1 = self.font.render(line1, True, WHITE)
+                desc1_rect = desc1.get_rect(center=(x + 80, y + 170))
+                self.screen.blit(desc1, desc1_rect)
+
+                if line2:
+                    desc2 = self.font.render(line2, True, WHITE)
+                    desc2_rect = desc2.get_rect(center=(x + 80, y + 185))
+                    self.screen.blit(desc2, desc2_rect)
+            else:
+                # Empty slot
+                empty_text = self.font.render("EMPTY", True, GRAY)
+                empty_rect = empty_text.get_rect(center=(x + 80, y + 100))
+                self.screen.blit(empty_text, empty_rect)
+
+        # Instructions
+        instructions1 = self.font.render("Click your pets above to add them to slots.", True, WHITE)
+        instructions2 = self.font.render("Click active slots to remove pets. Press ESC to close.", True, WHITE)
+        self.screen.blit(instructions1, (50, SCREEN_HEIGHT - 70))
+        self.screen.blit(instructions2, (50, SCREEN_HEIGHT - 50))
+
+    def draw_game_over_screen(self, player):
         """Draw the game over screen with final stats"""
         self.screen.fill(BLACK)
 
@@ -262,15 +432,16 @@ class GameRenderer:
         title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120))
         self.screen.blit(title_text, title_rect)
 
-        # Final stats - updated to show new stats
+        # Final stats - updated to show wins and pets
         y_offset = SCREEN_HEIGHT // 2 - 60
         stats_to_show = [
             f"Final Level: {player.level}",
             f"Final Evolution: {player.evolution}",
+            f"Total Wins: {player.wins}",
             f"Final Damage: {player.damage}",
             f"Final Health: {player.max_health}",
             f"EXP: {int(player.exp)}/{int(player.exp_to_next_level)}",
-            f"Pet Acquired: {'Yes' if pet else 'No'}"
+            f"Pets Owned: {len(player.owned_pets)}"
         ]
 
         for text_line in stats_to_show:

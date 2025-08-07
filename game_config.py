@@ -1,9 +1,17 @@
 # Game Configuration - All game settings in one place
 
-# Screen Settings
-SCREEN_WIDTH = 800
+# Screen Settings - Expanded for UI panel
+UI_PANEL_WIDTH = 300  # Left panel for stats
+GAMEPLAY_WIDTH = 800   # Main game area width
+SCREEN_WIDTH = UI_PANEL_WIDTH + GAMEPLAY_WIDTH  # Total: 1100
 SCREEN_HEIGHT = 600
 FPS = 60
+
+# Gameplay area boundaries (where player can move and enemies spawn)
+GAMEPLAY_LEFT = UI_PANEL_WIDTH  # Start gameplay area after UI panel
+GAMEPLAY_RIGHT = SCREEN_WIDTH
+GAMEPLAY_TOP = 0
+GAMEPLAY_BOTTOM = SCREEN_HEIGHT
 
 # Player Settings - Base values (evolution system now handles stats)
 PLAYER_START_HEALTH = 10
@@ -25,11 +33,9 @@ ENEMY_MAX_DAMAGE = 3
 ENEMY_ATTACK_RANGE = 60
 ENEMY_ATTACK_COOLDOWN = 1000  # milliseconds
 
-
 # Golden Apple Settings
 GOLDEN_APPLE_EXP_VALUE = 5
 GOLDEN_APPLE_SPAWN_TIME = 420  # frames (7 seconds at 60 FPS) - spawn less frequently than enemies
-
 
 # Enemy Appearance Parts
 ENEMY_HEADS = [
@@ -79,3 +85,4 @@ PURPLE = (128, 0, 128)
 GRAY = (128, 128, 128)
 BROWN = (139, 69, 19)
 SILVER = (192, 192, 192)
+DARK_GRAY = (64, 64, 64)  # For UI panel background

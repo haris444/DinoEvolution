@@ -51,21 +51,21 @@ def calculate_experience_needed(level):
 
 
 def generate_random_spawn_position():
-    """Generate a random position just outside the screen boundaries"""
+    """Generate a random position just outside the gameplay area boundaries"""
     side = random.randint(0, 3)
 
-    if side == 0:  # Top
-        x = random.randint(0, SCREEN_WIDTH - 40)
-        y = -40
-    elif side == 1:  # Right
-        x = SCREEN_WIDTH
-        y = random.randint(0, SCREEN_HEIGHT - 40)
-    elif side == 2:  # Bottom
-        x = random.randint(0, SCREEN_WIDTH - 40)
-        y = SCREEN_HEIGHT
-    else:  # Left
-        x = -40
-        y = random.randint(0, SCREEN_HEIGHT - 40)
+    if side == 0:  # Top of gameplay area
+        x = random.randint(GAMEPLAY_LEFT, GAMEPLAY_RIGHT - 40)
+        y = GAMEPLAY_TOP - 40
+    elif side == 1:  # Right of gameplay area
+        x = GAMEPLAY_RIGHT
+        y = random.randint(GAMEPLAY_TOP, GAMEPLAY_BOTTOM - 40)
+    elif side == 2:  # Bottom of gameplay area
+        x = random.randint(GAMEPLAY_LEFT, GAMEPLAY_RIGHT - 40)
+        y = GAMEPLAY_BOTTOM
+    else:  # Left of gameplay area (but not in UI panel)
+        x = GAMEPLAY_LEFT - 40
+        y = random.randint(GAMEPLAY_TOP, GAMEPLAY_BOTTOM - 40)
 
     return x, y
 

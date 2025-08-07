@@ -19,17 +19,17 @@ class GoldenApple:
         self.name = "Golden Apple"
 
     def is_clicked_by_player(self, mouse_pos, player):
-        """Check if apple was clicked and is within player's attack range"""
+        """Check if apple was clicked and is within player's attack range (now pet-boosted)"""
         if not self.rect.collidepoint(mouse_pos):
             return False
 
-        # Check if within attack range
+        # Check if within attack range (now uses pet-boosted range)
         from game_math import calculate_distance
         player_center = (player.rect.centerx, player.rect.centery)
         apple_center = (self.rect.centerx, self.rect.centery)
         distance = calculate_distance(player_center, apple_center)
 
-        return distance <= PLAYER_ATTACK_RANGE + self.rect.width / 2
+        return distance <= player.attack_range + self.rect.width / 2
 
     def get_exp_value(self):
         """Return the experience value of this apple"""
