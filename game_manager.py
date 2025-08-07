@@ -60,12 +60,16 @@ class GameManager:
 
                 # Check if enemy is within attack range
                 if distance <= PLAYER_ATTACK_RANGE + enemy.rect.width / 2:
-                    # Deal damage to enemy
-                    if enemy.take_damage(PLAYER_CLICK_DAMAGE):
+                    # Deal damage using player's current damage stat
+                    damage_dealt = self.player.damage
+                    if enemy.take_damage(damage_dealt):
                         # Enemy died - give EXP and create explosion
                         self.player.gain_experience(EXP_PER_ENEMY_KILL)
                         self.enemies.remove(enemy)
                         self._create_explosion_particles(enemy.rect.centerx, enemy.rect.centery)
+                        print(f"Defeated {enemy.name} with {damage_dealt} damage!")
+                    else:
+                        print(f"Hit {enemy.name} for {damage_dealt} damage! Enemy health: {enemy.health}")
                 else:
                     print("Enemy too far away!")
                 break
@@ -82,7 +86,7 @@ class GameManager:
     def _handle_game_over_input(self, mouse_pos):
         """Handle input on game over screen"""
         # Use the same button position as in the draw function
-        y_offset = SCREEN_HEIGHT // 2 - 60 + (4 * 35)  # After 4 stats lines
+        y_offset = SCREEN_HEIGHT // 2 - 60 + (5 * 35)  # After 5 stats lines
         play_again_button = pygame.Rect(
             SCREEN_WIDTH // 2 - 75,
             y_offset + 10,

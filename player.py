@@ -1,6 +1,7 @@
 import pygame
 from game_config import *
 from game_math import calculate_experience_needed, clamp_value
+from evolutions import get_evolution_data
 
 
 class Player:
@@ -9,31 +10,37 @@ class Player:
         self.exp = 0
         self.exp_to_next_level = START_EXP_TO_LEVEL
 
-        # Set initial evolution
-        self._update_evolution()
+        # Set initial evolution and stats
+        self._update_evolution_and_stats()
 
         # Position and size
         self.rect = pygame.Rect(50, 50, 50, 50)
 
-        # Health system
-        self.health = PLAYER_START_HEALTH
-        self.max_health = PLAYER_START_HEALTH
-        self.speed = PLAYER_SPEED
+    def _update_evolution_and_stats(self):
+        """Update player appearance AND stats based on current level"""
+        evolution_data = get_evolution_data(self.level)
 
-    def _update_evolution(self):
-        """Update player appearance based on current level"""
-        if self.level in EVOLUTIONS:
-            evolution_data = EVOLUTIONS[self.level]
-            self.evolution = evolution_data["name"]
-            self.body_color = evolution_data["body_color"]
-            self.head_color = evolution_data["head_color"]
+        # Update appearance
+        self.evolution = evolution_data["name"]
+        self.body_color = evolution_data["body_color"]
+        self.head_color = evolution_data["head_color"]
+        self.specialty = evolution_data["specialty"]
+
+        # Update stats from evolution data
+        stats = evolution_data["stats"]
+        old_max_health = getattr(self, 'max_health', stats["health"])
+
+        self.max_health = stats["health"]
+        self.speed = stats["speed"]
+        self.damage = stats["damage"]
+
+        # Handle health on level up
+        if hasattr(self, 'health'):
+            # Heal 50% of max health on level up + keep current health
+            self.health = min(self.max_health, self.health + (self.max_health * 0.5))
         else:
-            # Use the highest available evolution if level exceeds defined evolutions
-            max_level = max(EVOLUTIONS.keys())
-            evolution_data = EVOLUTIONS[max_level]
-            self.evolution = evolution_data["name"]
-            self.body_color = evolution_data["body_color"]
-            self.head_color = evolution_data["head_color"]
+            # First time initialization
+            self.health = self.max_health
 
     def handle_movement(self, keys, walls):
         """Handle player movement with collision detection"""
@@ -74,19 +81,17 @@ class Player:
             self._level_up()
 
     def _level_up(self):
-        """Handle leveling up and stat increases"""
+        """Handle leveling up with new stat system"""
         self.level += 1
         self.exp -= self.exp_to_next_level  # Keep excess EXP
         self.exp_to_next_level = calculate_experience_needed(self.level)
 
-        # Double health and max health on level up
-        self.max_health *= 2
-        self.health = self.max_health  # Full heal on level up
-
-        # Update appearance
-        self._update_evolution()
+        # Update evolution and all stats
+        self._update_evolution_and_stats()
 
         print(f"Leveled up to {self.level}! Evolved to {self.evolution}")
+        print(f"New stats - Damage: {self.damage}, Health: {self.max_health}, Speed: {self.speed}")
+        print(f"Specialty: {self.specialty}")
 
     def take_damage(self, amount):
         """Reduce health by damage amount"""

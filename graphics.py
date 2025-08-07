@@ -173,7 +173,7 @@ class GameRenderer:
 
     def draw_ui(self, player):
         """Draw all user interface elements"""
-        # Player stats
+        # Player stats - updated to show new stats
         stats_text = self.font.render(
             f"Level: {player.level} EXP: {player.exp:.1f}/{player.exp_to_next_level:.1f}",
             True, BLACK
@@ -183,13 +183,24 @@ class GameRenderer:
         evolution_text = self.font.render(f"Evolution: {player.evolution}", True, BLACK)
         self.screen.blit(evolution_text, (10, 35))
 
-        health_text = self.font.render(
-            f"Health: {player.health:.1f}/{player.max_health}",
+        # Show specialty
+        specialty_text = self.font.render(f"Specialty: {player.specialty}", True, BLACK)
+        self.screen.blit(specialty_text, (10, 60))
+
+        # Show damage and speed stats
+        stats_text = self.font.render(
+            f"Damage: {player.damage} | Speed: {player.speed}",
             True, BLACK
         )
-        self.screen.blit(health_text, (10, 60))
+        self.screen.blit(stats_text, (10, 85))
 
-        # Player health bar
+        health_text = self.font.render(
+            f"Health: {player.health:.0f}/{player.max_health}",
+            True, BLACK
+        )
+        self.screen.blit(health_text, (10, 110))
+
+        # Player health bar - adjusted position
         self._draw_player_health_bar(player)
 
         # Instructions
@@ -205,9 +216,9 @@ class GameRenderer:
         health_width = int(health_percentage * 200)
 
         # Background (red)
-        pygame.draw.rect(self.screen, RED, (10, 85, 200, 20))
+        pygame.draw.rect(self.screen, RED, (10, 135, 200, 20))
         # Foreground (green)
-        pygame.draw.rect(self.screen, GREEN, (10, 85, health_width, 20))
+        pygame.draw.rect(self.screen, GREEN, (10, 135, health_width, 20))
 
     def draw_pet_button(self):
         """Draw the pet purchase button"""
@@ -224,11 +235,13 @@ class GameRenderer:
         title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120))
         self.screen.blit(title_text, title_rect)
 
-        # Final stats
+        # Final stats - updated to show new stats
         y_offset = SCREEN_HEIGHT // 2 - 60
         stats_to_show = [
             f"Final Level: {player.level}",
             f"Final Evolution: {player.evolution}",
+            f"Final Damage: {player.damage}",
+            f"Final Health: {player.max_health}",
             f"EXP: {int(player.exp)}/{int(player.exp_to_next_level)}",
             f"Pet Acquired: {'Yes' if pet else 'No'}"
         ]

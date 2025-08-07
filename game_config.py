@@ -5,24 +5,16 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
 
-# Player Settings
+# Player Settings - Base values (evolution system now handles stats)
 PLAYER_START_HEALTH = 10
 PLAYER_BASE_MAX_HEALTH = 10
 PLAYER_SPEED = 5
-PLAYER_CLICK_DAMAGE = 1
 PLAYER_ATTACK_RANGE = 80
 
 # Leveling System
 START_EXP_TO_LEVEL = 5
 EXP_MULTIPLIER = 2  # Each level requires double the EXP
 EXP_PER_ENEMY_KILL = 2.2
-
-# Player Evolution Data
-EVOLUTIONS = {
-    1: {"name": "Tung Tung", "body_color": (0, 255, 0), "head_color": (255, 255, 0)},
-    2: {"name": "Bombardino", "body_color": (255, 0, 0), "head_color": (0, 255, 255)},
-    3: {"name": "Tralalero Tralala", "body_color": (0, 0, 255), "head_color": (128, 0, 128)},
-}
 
 # Enemy Base Stats
 ENEMY_HEALTH = 5
