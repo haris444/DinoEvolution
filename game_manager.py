@@ -86,7 +86,7 @@ class GameManager:
     def _handle_game_over_input(self, mouse_pos):
         """Handle input on game over screen"""
         # Use the same button position as in the draw function
-        y_offset = SCREEN_HEIGHT // 2 - 60 + (5 * 35)  # After 5 stats lines
+        y_offset = SCREEN_HEIGHT // 2 - 60 + (6 * 35)  # After 6 stats lines
         play_again_button = pygame.Rect(
             SCREEN_WIDTH // 2 - 75,
             y_offset + 10,
