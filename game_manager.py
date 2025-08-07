@@ -2,7 +2,6 @@ import pygame
 from game_config import *
 from game_math import calculate_spawn_time_for_level, calculate_distance
 from player import Player
-from enemies import Enemy
 from golden_apple import GoldenApple
 from walls import create_walls
 from graphics import Particle, GameRenderer
@@ -32,6 +31,7 @@ class GameManager:
         self.particles = []
         self.walls = create_walls()
         self.enemy_spawn_timer = 0
+        self.enemies_spawned_since_last_boss = 0
         self.apple_spawn_timer = 0
         self.game_state = "playing"
         self.selected_pet_info = None
@@ -242,7 +242,12 @@ class GameManager:
         spawn_time = calculate_spawn_time_for_level(self.player.level)
 
         if self.enemy_spawn_timer >= spawn_time:
-            self.enemies.append(Enemy(self.walls, self.player.level))
+            if self.enemies_spawned_since_last_boss >= BOSS_SPAWN_INTERVAL:
+                self.enemies.append(Boss(self.walls, self.player.level))
+                self.enemies_spawned_since_last_boss = 0
+            else:
+                self.enemies.append(Enemy(self.walls, self.player.level))
+                self.enemies_spawned_since_last_boss += 1
             self.enemy_spawn_timer = 0
 
     def _update_apple_spawning(self):

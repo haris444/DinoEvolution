@@ -4,6 +4,7 @@ from game_config import *
 from game_math import (
     generate_random_spawn_position,
     calculate_enemy_stats_for_level,
+    calculate_boss_stats_for_level,
     calculate_distance,
     normalize_vector,
     clamp_value
@@ -21,6 +22,7 @@ class Enemy:
 
         # Set stats based on player level
         self._set_stats_for_level(player_level)
+        self.is_boss = False
 
     def _generate_random_appearance(self):
         """Create random enemy appearance from available parts"""
@@ -114,3 +116,46 @@ class Enemy:
         if self.max_health == 0:
             return 0
         return self.health / self.max_health
+
+
+class Boss(Enemy):
+    """A much stronger boss enemy with 10-30x health."""
+
+    def __init__(self, walls, player_level=1):
+        super().__init__(walls, player_level)
+        self.rect.width = 80  # Boss is twice as wide
+        self.rect.height = 80 # Boss is twice as tall
+
+    def _generate_random_appearance(self):
+        """Bosses have a unique, royal appearance."""
+        self.head, self.head_color = ("Crown", (255, 215, 0))  # Gold
+        self.body, self.body_color = ("Royal Robe", (75, 0, 130))  # Indigo
+        self.accessory, self.accessory_color = ("Scepter", (192, 192, 192))  # Silver
+        self.name = "The Meme King"
+
+    def _set_stats_for_level(self, player_level):
+        """Set boss stats to be much higher than normal enemies."""
+        # Get the stats of a normal enemy for the current level
+        normal_enemy_stats = calculate_enemy_stats_for_level(player_level)
+        normal_enemy_health = normal_enemy_stats["health"]
+
+        # --- Health Boost! ---
+        # Boss health is 10-30x a normal enemy's health
+        health_multiplier = random.uniform(10, 30)
+        self.health = int(normal_enemy_health * health_multiplier)
+        self.max_health = self.health
+
+        # Boss speed is slightly slower to make it a bigger target
+        self.speed = random.randint(
+            normal_enemy_stats["min_speed"],
+            normal_enemy_stats["max_speed"]
+        )
+        self.speed = max(1, self.speed -1) # Ensure speed is at least 1 but slower
+
+        # Boss damage is also higher
+        damage_multiplier = random.uniform(2, 4)
+        self.attack_damage = random.randint(
+            int(normal_enemy_stats["min_damage"] * damage_multiplier),
+            int(normal_enemy_stats["max_damage"] * damage_multiplier)
+        )
+        self.last_attack = 0

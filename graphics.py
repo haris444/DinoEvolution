@@ -88,7 +88,8 @@ class GameRenderer:
 
         # Draw enemy head
         head_pos = (enemy.rect.centerx, enemy.rect.top + 10)
-        pygame.draw.circle(self.screen, enemy.head_color, head_pos, 12)
+        head_radius = 20 if enemy.is_boss else 12
+        pygame.draw.circle(self.screen, enemy.head_color, head_pos, head_radius)
 
         # Draw enemy accessory
         self._draw_enemy_accessory(enemy)
@@ -170,12 +171,12 @@ class GameRenderer:
     def _draw_health_bar(self, enemy):
         """Draw enemy health bar"""
         health_percentage = enemy.get_health_percentage()
-        health_width = int(health_percentage * 40)
+        health_width = int(health_percentage * enemy.rect.width)
 
         # Background (red)
-        pygame.draw.rect(self.screen, RED, (enemy.rect.x, enemy.rect.y + 45, 40, 5))
+        pygame.draw.rect(self.screen, RED, (enemy.rect.x, enemy.rect.y + enemy.rect.height + 5, enemy.rect.width, 5))
         # Foreground (green)
-        pygame.draw.rect(self.screen, GREEN, (enemy.rect.x, enemy.rect.y + 45, health_width, 5))
+        pygame.draw.rect(self.screen, GREEN, (enemy.rect.x, enemy.rect.y + enemy.rect.height + 5, health_width, 5))
 
     def draw_wall(self, wall):
         """Draw a wall"""
@@ -515,4 +516,4 @@ class GameRenderer:
         pygame.draw.rect(self.screen, WHITE, play_again_button)
         self.screen.blit(play_again_text, play_again_text.get_rect(center=play_again_button.center))
 
-        return play_again_button
+        return play_again_buttons

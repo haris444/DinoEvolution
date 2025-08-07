@@ -37,6 +37,13 @@ ENEMY_ATTACK_COOLDOWN = 1000  # milliseconds
 GOLDEN_APPLE_EXP_VALUE = 5
 GOLDEN_APPLE_SPAWN_TIME = 420  # frames (7 seconds at 60 FPS) - spawn less frequently than enemies
 
+# Boss Settings
+BOSS_SPAWN_INTERVAL = 10  # Spawn a boss after every 10 normal enemies
+BOSS_HEALTH_MULTIPLIER_MIN = 10
+BOSS_HEALTH_MULTIPLIER_MAX = 30
+BOSS_DAMAGE_MULTIPLIER_MIN = 3
+BOSS_DAMAGE_MULTIPLIER_MAX = 7
+
 # Enemy Appearance Parts
 ENEMY_HEADS = [
     ("Frog", (0, 255, 0)),

@@ -45,6 +45,22 @@ def calculate_enemy_stats_for_level(level):
     }
 
 
+def calculate_boss_stats_for_level(level):
+    """Calculate boss enemy strength using linear scaling formulas and multipliers"""
+    base_stats = calculate_enemy_stats_for_level(level)
+
+    health_multiplier = random.uniform(BOSS_HEALTH_MULTIPLIER_MIN, BOSS_HEALTH_MULTIPLIER_MAX)
+    damage_multiplier = random.uniform(BOSS_DAMAGE_MULTIPLIER_MIN, BOSS_DAMAGE_MULTIPLIER_MAX)
+
+    return {
+        "health": base_stats["health"] * health_multiplier,
+        "min_speed": base_stats["min_speed"],  # Speed remains the same
+        "max_speed": base_stats["max_speed"],
+        "min_damage": base_stats["min_damage"] * damage_multiplier,
+        "max_damage": base_stats["max_damage"] * damage_multiplier,
+    }
+
+
 def calculate_experience_needed(level):
     """Calculate EXP needed for next level using exponential growth"""
     return START_EXP_TO_LEVEL * (EXP_MULTIPLIER ** (level - 1))
