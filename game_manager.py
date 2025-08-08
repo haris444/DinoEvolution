@@ -5,6 +5,7 @@ from player import Player
 from golden_apple import GoldenApple
 from walls import create_walls
 from graphics import Particle, GameRenderer
+from enemies import Enemy, Boss
 
 
 class GameManager:
