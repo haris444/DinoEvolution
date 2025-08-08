@@ -516,4 +516,4 @@ class GameRenderer:
         pygame.draw.rect(self.screen, WHITE, play_again_button)
         self.screen.blit(play_again_text, play_again_text.get_rect(center=play_again_button.center))
 
-        return play_again_buttona
+        return play_again_button
