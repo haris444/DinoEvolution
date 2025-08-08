@@ -1,4 +1,5 @@
 import pygame
+import time
 from game_config import *
 from game_math import calculate_experience_needed, clamp_value
 from evolutions import get_evolution_data
@@ -11,6 +12,9 @@ class Player:
         self.exp = 0
         self.exp_to_next_level = START_EXP_TO_LEVEL
         self.wins = 0  # Track enemy kills for buying pets
+
+        # Shield system
+        self._shield_end_time = 0.0  # time.monotonic() when shield ends
 
         # Pet system
         self.owned_pets = []  # List of pet names the player owns
@@ -213,7 +217,11 @@ class Player:
         print(f"Specialty: {self.specialty}")
 
     def take_damage(self, amount):
-        """Reduce health by damage amount"""
+        """Reduce health by damage amount (unless shielded)"""
+        if self.has_shield():
+            print(f"Shield blocked {amount} damage! {self.shield_time_remaining():.1f}s remaining")
+            return
+
         self.health -= amount
         if self.health < 0:
             self.health = 0
@@ -228,3 +236,18 @@ class Player:
     def is_alive(self):
         """Check if player is still alive"""
         return self.health > 0
+
+    def activate_shield(self, duration_seconds: float) -> None:
+        """Grant/extend a temporary shield that blocks all damage."""
+        now = time.monotonic()
+        # Stack the shield duration (extend current shield)
+        self._shield_end_time = max(self._shield_end_time, now + duration_seconds)
+        print(f"Shield activated for {duration_seconds}s! Total shield time: {self.shield_time_remaining():.1f}s")
+
+    def has_shield(self) -> bool:
+        """True while shield is active."""
+        return time.monotonic() < self._shield_end_time
+
+    def shield_time_remaining(self) -> float:
+        """Seconds left on the shield timer."""
+        return max(0.0, self._shield_end_time - time.monotonic())

@@ -1,8 +1,10 @@
 import pygame
+import random
 from game_config import *
 from game_math import calculate_spawn_time_for_level, calculate_distance
 from player import Player
 from golden_apple import GoldenApple
+from shield_fruit import ShieldFruit
 from walls import create_walls
 from graphics import Particle, GameRenderer
 from enemies import Enemy, Boss
@@ -177,15 +179,22 @@ class GameManager:
                 break
 
     def _handle_apple_collection(self, mouse_pos):
-        """Check if player clicked on a golden apple within attack range"""
+        """Check if player clicked on a golden apple or shield fruit within attack range"""
         for apple in self.golden_apples[:]:
             if apple.is_clicked_by_player(mouse_pos, self.player):
-                # Use pet-boosted attack range
-                exp_gained = apple.get_exp_value()
-                self.player.gain_experience(exp_gained)
-                self.golden_apples.remove(apple)
-                self._create_explosion_particles(apple.rect.centerx, apple.rect.centery)
-                print(f"Collected {apple.name} for {exp_gained} EXP!")
+                # Handle different pickup types
+                if isinstance(apple, ShieldFruit):
+                    shield_duration = apple.get_shield_duration()
+                    self.player.activate_shield(shield_duration)
+                    self.golden_apples.remove(apple)
+                    self._create_explosion_particles(apple.rect.centerx, apple.rect.centery)
+                    print(f"Collected {apple.name} for {shield_duration}s of immunity!")
+                else:  # Regular golden apple
+                    exp_gained = apple.get_exp_value()
+                    self.player.gain_experience(exp_gained)
+                    self.golden_apples.remove(apple)
+                    self._create_explosion_particles(apple.rect.centerx, apple.rect.centery)
+                    print(f"Collected {apple.name} for {exp_gained} EXP!")
                 break
 
     def _handle_game_over_input(self, mouse_pos):
@@ -252,11 +261,15 @@ class GameManager:
             self.enemy_spawn_timer = 0
 
     def _update_apple_spawning(self):
-        """Handle golden apple spawning"""
+        """Handle golden apple and shield fruit spawning"""
         self.apple_spawn_timer += 1
 
         if self.apple_spawn_timer >= GOLDEN_APPLE_SPAWN_TIME:
-            self.golden_apples.append(GoldenApple())
+            # 20% chance to spawn a shield fruit instead of a golden apple
+            if random.random() < 0.2:
+                self.golden_apples.append(ShieldFruit())
+            else:
+                self.golden_apples.append(GoldenApple())
             self.apple_spawn_timer = 0
 
     def _update_enemies(self):
@@ -304,9 +317,12 @@ class GameManager:
         for enemy in self.enemies:
             self.renderer.draw_enemy(enemy)
 
-        # Draw golden apples
+        # Draw golden apples and shield fruits
         for apple in self.golden_apples:
-            self.renderer.draw_golden_apple(apple)
+            if isinstance(apple, ShieldFruit):
+                self.renderer.draw_shield_fruit(apple)
+            else:
+                self.renderer.draw_golden_apple(apple)
 
         # Draw pets
         for i in range(3):

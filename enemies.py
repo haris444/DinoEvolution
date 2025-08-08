@@ -102,6 +102,7 @@ class Enemy:
         if current_time - self.last_attack > ENEMY_ATTACK_COOLDOWN:
             self.last_attack = current_time
             player.take_damage(self.attack_damage)
+            # No need to check shield here - the player.take_damage method handles that
             print(f"{self.name} attacked for {self.attack_damage} damage!")
             return True
         return False

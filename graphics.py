@@ -168,6 +168,33 @@ class GameRenderer:
         text_rect = exp_text.get_rect(center=(apple.rect.centerx, apple.rect.top - 15))
         self.screen.blit(exp_text, text_rect)
 
+    def draw_shield_fruit(self, shield_fruit):
+        """
+        Draws a shield fruit collectible.
+        Expects shield_fruit to have at least .rect; optionally .color and .outline_color.
+        """
+        rect = shield_fruit.rect
+        color = getattr(shield_fruit, "color", (80, 200, 255))  # default cyan-ish
+        outline = getattr(shield_fruit, "outline_color", (40, 120, 200))
+
+        # Draw body (circle based on rect)
+        center = (rect.centerx, rect.centery)
+        radius = min(rect.width, rect.height) // 2
+        pygame.draw.circle(self.screen, color, center, radius)
+        pygame.draw.circle(self.screen, outline, center, radius, width=2)
+
+        # Optional: a simple shield emblem
+        emblem_w = int(radius * 1.1)
+        emblem_h = int(radius * 1.2)
+        emblem_rect = pygame.Rect(0, 0, emblem_w, emblem_h)
+        emblem_rect.center = center
+        # Shield shape: top arc + bottom point
+        top = (emblem_rect.centerx, emblem_rect.top)
+        left = (emblem_rect.left, emblem_rect.top + emblem_h // 3)
+        right = (emblem_rect.right, emblem_rect.top + emblem_h // 3)
+        bottom = (emblem_rect.centerx, emblem_rect.bottom)
+        pygame.draw.polygon(self.screen, (255, 255, 255), [top, right, bottom, left], width=2)
+
     def _draw_health_bar(self, enemy):
         """Draw enemy health bar"""
         health_percentage = enemy.get_health_percentage()
@@ -503,6 +530,18 @@ class GameRenderer:
             f"EXP: {int(player.exp)}/{int(player.exp_to_next_level)}",
             f"Pets Owned: {len(player.owned_pets)}"
         ]
+
+        # Add shield status if active
+        if player.has_shield():
+            shield_time = player.shield_time_remaining()
+            shield_color = (80, 180, 255)  # Light blue
+            shield_text = f"SHIELD: {shield_time:.1f}s"
+            stats_to_show.append(shield_text)
+
+            # Draw shield indicator - blue ring around player
+            pygame.draw.circle(self.screen, shield_color,
+                              (player.rect.centerx, player.rect.centery),
+                              player.rect.width + 5, 3)
 
         for text_line in stats_to_show:
             stats_text = self.font.render(text_line, True, WHITE)
