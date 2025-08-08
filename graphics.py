@@ -61,7 +61,15 @@ class GameRenderer:
             pygame.draw.line(self.screen, color, (UI_PANEL_WIDTH, y), (SCREEN_WIDTH, y))
 
     def draw_player(self, player):
-        """Draw player with attack range visualization (now pet-boosted)"""
+        """Draw player with color-changing attack range visualization"""
+        # Determine aura color based on shield status
+        if player.has_shield():
+            # Blue aura when shield is active
+            aura_color = (100, 150, 255, 60)  # Semi-transparent blue, slightly more opaque
+        else:
+            # Pink aura normally
+            aura_color = (255, 192, 203, 50)  # Semi-transparent pink
+
         # Draw attack range aura (using pet-boosted range)
         aura_surface = pygame.Surface(
             (player.attack_range * 2, player.attack_range * 2),
@@ -69,7 +77,7 @@ class GameRenderer:
         )
         pygame.draw.circle(
             aura_surface,
-            (255, 192, 203, 50),  # Semi-transparent pink
+            aura_color,
             (player.attack_range, player.attack_range),
             player.attack_range
         )
@@ -80,6 +88,13 @@ class GameRenderer:
         pygame.draw.rect(self.screen, player.body_color, player.rect)
         head_pos = (player.rect.centerx, player.rect.top + 10)
         pygame.draw.circle(self.screen, player.head_color, head_pos, 15)
+
+        # Draw additional shield indicator ring if shield is active
+        if player.has_shield():
+            shield_color = (80, 180, 255)  # Bright blue
+            pygame.draw.circle(self.screen, shield_color,
+                              (player.rect.centerx, player.rect.centery),
+                              player.rect.width + 8, 3)
 
     def draw_enemy(self, enemy):
         """Draw enemy with all its parts and health bar"""
@@ -273,6 +288,13 @@ class GameRenderer:
 
         # Player health bar
         self._draw_player_health_bar(player, y_offset + 110)
+
+        # Show shield status if active
+        if player.has_shield():
+            shield_time = player.shield_time_remaining()
+            shield_text = self.font.render(f"SHIELD: {shield_time:.1f}s", True, (80, 180, 255))
+            self.screen.blit(shield_text, (10, y_offset + 130))
+            y_offset += 20  # Adjust offset for shield text
 
         # Show active pets
         pets_title = self.font.render("Active Pets:", True, WHITE)
